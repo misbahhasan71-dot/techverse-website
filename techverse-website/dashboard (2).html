@@ -382,7 +382,8 @@
 
     // ---------- AUTH GUARD ----------
     onAuthStateChanged(auth, async (user)=>{
-      if(!user){ location.replace("signin.html"); return; }
+      if(!user){ location.replace("index.html"); return; }
+
       UID = user.uid;
       $('userInfo').textContent = user.email || 'Logged in';
       await loadAllFromDB();
