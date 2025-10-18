@@ -1,0 +1,961 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Techverse Solution – Inventory & Billing</title>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);min-height:100vh}
+    .form-group{margin-bottom:16px}
+    .form-group label{display:block;margin-bottom:6px;color:#333;font-weight:500}
+    .form-group input{width:100%;padding:12px;border:2px solid #e5e7eb;border-radius:8px;font-size:14px}
+    .btn{padding:12px 24px;border:none;border-radius:8px;cursor:pointer;font-size:14px;font-weight:600;transition:all .2s}
+    .btn-primary{background:#2563eb;color:white}.btn-primary:hover{background:#1d4ed8}
+    .btn-secondary{background:#6b7280;color:white}.btn-secondary:hover{background:#4b5563}
+    .btn-success{background:#10b981;color:white}.btn-success:hover{background:#059669}
+    .btn-danger{background:#ef4444;color:white}.btn-danger:hover{background:#dc2626}
+    .btn-sm{padding:6px 12px;font-size:12px}
+    .app-container{background:#f3f4f6;min-height:100vh}
+    .header{background:white;padding:16px 24px;box-shadow:0 2px 10px rgba(0,0,0,.1);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px}
+    .header h1{color:#2563eb;font-size:22px}
+    .user-info{color:#555;font-size:14px}
+    .nav-tabs{background:white;padding:0 16px;display:flex;gap:6px;overflow-x:auto;border-bottom:1px solid #e5e7eb}
+    .nav-tab{padding:12px 16px;cursor:pointer;border:none;background:transparent;color:#666;font-weight:600;border-bottom:3px solid transparent}
+    .nav-tab:hover{color:#2563eb;background:#eff6ff}
+    .nav-tab.active{color:#2563eb;border-bottom-color:#2563eb}
+    .content{padding:20px;max-width:1400px;margin:0 auto}
+    .tab-content{display:none}.tab-content.active{display:block}
+    .card{background:white;border-radius:12px;padding:20px;box-shadow:0 2px 10px rgba(0,0,0,.08);margin-bottom:20px}
+    .card h2{color:#1f2937;margin-bottom:16px;font-size:18px}
+    .stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:16px;margin-bottom:20px}
+    .stat-card{background:linear-gradient(135deg,#2563eb 0%,#1d4ed8 100%);color:white;padding:18px;border-radius:12px}
+    .stat-card.green{background:linear-gradient(135deg,#10b981 0%,#059669 100%)}
+    .stat-card.orange{background:linear-gradient(135deg,#f59e0b 0%,#d97706 100%)}
+    .stat-card.purple{background:linear-gradient(135deg,#8b5cf6 0%,#7c3aed 100%)}
+    .stat-label{font-size:13px;opacity:.95;margin-bottom:6px}
+    .stat-value{font-size:28px;font-weight:800}
+    .search-box input{width:100%;padding:10px;border:2px solid #e5e7eb;border-radius:8px;font-size:14px}
+    table{width:100%;border-collapse:collapse;margin-top:10px}
+    thead{background:#f3f4f6}
+    th{padding:10px;text-align:left;color:#374151;font-weight:700;font-size:13px}
+    td{padding:10px;border-bottom:1px solid #e5e7eb;color:#4b5563;font-size:14px;vertical-align:top}
+    tr:hover{background:#fafafa}
+    .actions{display:flex;gap:8px;flex-wrap:wrap}
+    .toast{position:fixed;top:20px;right:20px;background:white;padding:12px 18px;border-radius:10px;box-shadow:0 8px 20px rgba(0,0,0,.15);display:none;z-index:9999}
+    .toast.success{border-left:4px solid #10b981}
+    .toast.error{border-left:4px solid #ef4444}
+    .modal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.45);z-index:999;justify-content:center;align-items:center;padding:20px}
+    .modal.active{display:flex}
+    .modal-content{background:white;padding:22px;border-radius:12px;max-width:640px;width:100%;max-height:90vh;overflow-y:auto}
+    .modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+    .modal-header h3{color:#111827;font-size:18px}
+    .close-btn{background:none;border:none;font-size:24px;cursor:pointer;color:#9ca3af}
+    .pos-grid{display:grid;grid-template-columns:2fr 1fr;gap:16px}
+    .product-select select,.form-group select{width:100%;padding:12px;border:2px solid #e5e7eb;border-radius:8px;font-size:14px}
+    .quantity-control{display:flex;align-items:center;gap:8px}
+    .quantity-control button{width:28px;height:28px;border:none;background:#2563eb;color:white;border-radius:6px;cursor:pointer;font-size:16px}
+    .quantity-control span{min-width:30px;text-align:center}
+    .low-stock{background:#fef3c7;color:#92400e;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700}
+    .invoice{max-width:800px;margin:0 auto;padding:32px;background:white}
+    .invoice-header{text-align:center;border-bottom:2px solid #2563eb;padding-bottom:16px;margin-bottom:20px}
+    .invoice-header h1{color:#2563eb;font-size:24px;margin-bottom:6px}
+    .invoice-details{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px}
+    .cart-total .total-row{display:flex;justify-content:space-between;margin:6px 0}
+    .cart-total .grand{font-size:18px;font-weight:800;color:#2563eb}
+    @media (max-width:900px){.pos-grid{grid-template-columns:1fr}}
+    @media print{body *{visibility:hidden}.invoice,.invoice *{visibility:visible}.invoice{position:absolute;left:0;top:0;width:100%}.btn{display:none}}
+    .print-thermal .invoice{max-width:58mm;padding:10px}
+    .print-thermal .invoice-header{border-bottom:1px dashed #999}
+    .print-normal .invoice{max-width:800px}
+  </style>
+</head>
+<body>
+  <div id="toast" class="toast"></div>
+
+  <div id="appContainer" class="app-container">
+    <div class="header">
+      <h1>Techverse Solution – Inventory & Billing</h1>
+      <div style="display:flex;gap:8px;align-items:center">
+        <span class="user-info" id="userInfo"></span>
+        <button class="btn btn-secondary btn-sm" onclick="openSettings()">Store Settings</button>
+        <button class="btn btn-secondary btn-sm" id="logoutBtn">Logout</button>
+      </div>
+    </div>
+
+    <div class="nav-tabs">
+      <button class="nav-tab active" onclick="switchTab(event,'dashboard')">Dashboard</button>
+      <button class="nav-tab" onclick="switchTab(event,'products')">Products</button>
+      <button class="nav-tab" onclick="switchTab(event,'pos')">POS</button>
+      <button class="nav-tab" onclick="switchTab(event,'customers')">Customers</button>
+      <button class="nav-tab" onclick="switchTab(event,'reports')">Reports</button>
+      <button class="nav-tab" onclick="switchTab(event,'export')">Export</button>
+      <button class="nav-tab" onclick="switchTab(event,'import')">Import</button>
+    </div>
+
+    <div class="content">
+      <div id="dashboard" class="tab-content active">
+        <div class="stats-grid">
+          <div class="stat-card"><div class="stat-label">Total Products</div><div class="stat-value" id="totalProducts">0</div></div>
+          <div class="stat-card green"><div class="stat-label">Total Customers</div><div class="stat-value" id="totalCustomers">0</div></div>
+          <div class="stat-card orange"><div class="stat-label">Total Sales (₹)</div><div class="stat-value" id="totalSales">0</div></div>
+          <div class="stat-card purple"><div class="stat-label">Low Stock Items</div><div class="stat-value" id="lowStockCount">0</div></div>
+        </div>
+
+        <div class="card">
+          <h2>Recent Transactions</h2>
+          <table id="recentTransactionsTable">
+            <thead><tr><th>Invoice #</th><th>Date</th><th>Customer</th><th>Total (₹)</th><th>Actions</th></tr></thead>
+            <tbody id="recentTransactions"></tbody>
+          </table>
+        </div>
+
+        <div class="card">
+          <h2>Low Stock Alerts</h2>
+          <table>
+            <thead><tr><th>Product</th><th>Category</th><th>Current Stock</th><th>SKU</th></tr></thead>
+            <tbody id="lowStockTable"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div id="products" class="tab-content">
+        <div class="card">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+            <h2 style="margin:0;">Product Management</h2>
+            <button class="btn btn-primary" onclick="showAddProductModal()">Add Product</button>
+          </div>
+          <div class="search-box">
+            <input type="text" id="productSearch" placeholder="Search products..." oninput="searchProducts()">
+          </div>
+          <table>
+            <thead><tr><th>Name</th><th>Category</th><th>Quantity</th><th>Cost (₹)</th><th>Selling (₹)</th><th>Supplier</th><th>SKU</th><th>Actions</th></tr></thead>
+            <tbody id="productsTable"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div id="pos" class="tab-content">
+        <div class="pos-grid">
+          <div class="card">
+            <h2>Select Products</h2>
+            <div class="product-select">
+              <select id="posProductSelect" onchange="addToCart()">
+                <option value="">-- Select Product --</option>
+              </select>
+            </div>
+            <table>
+              <thead><tr><th>Product</th><th>Price (₹)</th><th>Qty</th><th>Subtotal (₹)</th><th>Actions</th></tr></thead>
+              <tbody id="cartItems"></tbody>
+            </table>
+          </div>
+
+          <div class="card">
+            <h2>Billing Details</h2>
+            <div class="form-group"><label>Customer Name</label><input type="text" id="billCustomerName" placeholder="Customer name"></div>
+            <div class="form-group"><label>Customer Phone</label><input type="text" id="billCustomerPhone" placeholder="Phone number"></div>
+            <div class="form-group"><label>Tax (%)</label><input type="number" id="taxPercent" value="0" min="0" max="100" onchange="updateCart()"></div>
+            <div class="form-group"><label>Discount (₹)</label><input type="number" id="discountAmount" value="0" min="0" onchange="updateCart()"></div>
+
+            <div class="cart-total" style="margin-top:8px">
+              <div class="total-row"><span>Subtotal:</span><span id="subtotal">₹0</span></div>
+              <div class="total-row"><span>Tax:</span><span id="taxAmount">₹0</span></div>
+              <div class="total-row"><span>Discount:</span><span id="discount">₹0</span></div>
+              <div class="total-row grand"><span>Grand Total:</span><span id="grandTotal">₹0</span></div>
+            </div>
+
+            <div class="form-group" style="margin-top:8px">
+              <label>Payment Mode</label>
+              <select id="paymentMode"><option value="cash">Cash</option><option value="online">Online</option></select>
+            </div>
+
+            <div class="form-group">
+              <label>Print Mode</label>
+              <select id="printModeSelect" onchange="applyPrintModeSelect()">
+                <option value="normal">Normal</option>
+                <option value="thermal">Thermal</option>
+              </select>
+            </div>
+
+            <button class="btn btn-success" style="width:100%;margin-top:10px;" onclick="completeSale()">Complete Sale</button>
+            <button class="btn btn-secondary" style="width:100%;margin-top:8px;" onclick="clearCart()">Clear Cart</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="customers" class="tab-content">
+        <div class="card">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+            <h2 style="margin:0;">Customer Management</h2>
+            <button class="btn btn-primary" onclick="showAddCustomerModal()">Add Customer</button>
+          </div>
+          <div class="search-box">
+            <input type="text" id="customerSearch" placeholder="Search customers..." oninput="searchCustomers()">
+          </div>
+          <table>
+            <thead><tr><th>Name</th><th>Contact</th><th>Address</th><th>Total Purchases (₹)</th><th>Actions</th></tr></thead>
+            <tbody id="customersTable"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div id="reports" class="tab-content">
+        <div class="card">
+          <h2>Sales Report (This Month)</h2>
+          <div class="stats-grid">
+            <div class="stat-card green"><div class="stat-label">This Month Revenue (₹)</div><div class="stat-value" id="monthRevenue">0</div></div>
+            <div class="stat-card"><div class="stat-label">This Month Transactions</div><div class="stat-value" id="monthTransactions">0</div></div>
+            <div class="stat-card purple"><div class="stat-label">Average Sale (₹)</div><div class="stat-value" id="avgSale">0</div></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>Best Selling Products</h2>
+          <table>
+            <thead><tr><th>Product</th><th>Category</th><th>Units Sold</th><th>Revenue (₹)</th></tr></thead>
+            <tbody id="bestSellersTable"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div id="export" class="tab-content">
+        <div class="card">
+          <h2>Export Data</h2>
+          <div style="display:flex;gap:10px;flex-wrap:wrap">
+            <button class="btn btn-primary" onclick="exportData('products')">Export Products (JSON)</button>
+            <button class="btn btn-success" onclick="exportData('customers')">Export Customers (JSON)</button>
+            <button class="btn btn-secondary" onclick="exportData('transactions')">Export Transactions (JSON)</button>
+            <button class="btn btn-danger" onclick="exportAll()">Export All Data (JSON)</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="import" class="tab-content">
+        <div class="card">
+          <h2>Import Data</h2>
+          <div class="form-group">
+            <label>Select Data Type</label>
+            <select id="importType">
+              <option value="products">Products</option>
+              <option value="customers">Customers</option>
+              <option value="transactions">Transactions</option>
+              <option value="all">All Data</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Select File (JSON)</label>
+            <input type="file" id="importFile" accept=".json">
+          </div>
+          <button class="btn btn-primary" onclick="importData()">Import Data</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="productModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="productModalTitle">Add Product</h3>
+        <button class="close-btn" onclick="closeProductModal()">&times;</button>
+      </div>
+      <div class="form-group"><label>Product Name *</label><input type="text" id="productName"></div>
+      <div class="form-group"><label>Category *</label><input type="text" id="productCategory"></div>
+      <div class="form-group"><label>Quantity *</label><input type="number" id="productQuantity" min="0" value="0"></div>
+      <div class="form-group"><label>Cost Price (₹) *</label><input type="number" id="productCost" min="0" step="0.01" value="0"></div>
+      <div class="form-group"><label>Selling Price (₹) *</label><input type="number" id="productSelling" min="0" step="0.01" value="0"></div>
+      <div class="form-group"><label>Supplier</label><input type="text" id="productSupplier"></div>
+      <div class="form-group"><label>SKU/Barcode</label><input type="text" id="productSKU"></div>
+      <button class="btn btn-primary" onclick="saveProduct()">Save Product</button>
+    </div>
+  </div>
+
+  <div id="customerModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="customerModalTitle">Add Customer</h3>
+        <button class="close-btn" onclick="closeCustomerModal()">&times;</button>
+      </div>
+      <div class="form-group"><label>Customer Name *</label><input type="text" id="customerName"></div>
+      <div class="form-group"><label>Contact Number *</label><input type="text" id="customerContact"></div>
+      <div class="form-group"><label>Address</label><input type="text" id="customerAddress"></div>
+      <button class="btn btn-primary" onclick="saveCustomer()">Save Customer</button>
+    </div>
+  </div>
+
+  <div id="settingsModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Store Settings</h3>
+        <button class="close-btn" onclick="closeSettings()">&times;</button>
+      </div>
+      <div class="form-group"><label>Store Name</label><input id="setName" placeholder="Techverse Solution"></div>
+      <div class="form-group"><label>Address</label><input id="setAddress" placeholder="Street, City"></div>
+      <div class="form-group"><label>Contact</label><input id="setContact" placeholder="+91-..."></div>
+      <div class="form-group"><label>GST %</label><input id="setGST" type="number" min="0" max="100" step="0.01" placeholder="18"></div>
+      <div class="form-group"><label>Print Mode</label>
+        <select id="setPrintMode"><option value="normal">Normal</option><option value="thermal">Thermal</option></select>
+      </div>
+      <div class="form-group"><label>Logo (upload)</label><input id="logoFile" type="file" accept="image/*"/></div>
+      <div class="form-group"><label>Current Logo URL</label><input id="setLogoUrl" placeholder="(auto-filled after upload)"></div>
+      <button class="btn btn-primary" onclick="saveSettings()">Save Settings</button>
+    </div>
+  </div>
+
+  <div id="invoiceModal" class="modal">
+    <div class="modal-content" style="max-width:900px;">
+      <div class="modal-header">
+        <h3>Invoice</h3>
+        <button class="close-btn" onclick="closeInvoiceModal()">&times;</button>
+      </div>
+      <div id="invoiceContent"></div>
+      <div style="margin-top:12px;display:flex;gap:10px;">
+        <button class="btn btn-primary" onclick="printInvoice()">Print Invoice</button>
+        <button class="btn btn-secondary" onclick="closeInvoiceModal()">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js";
+    import { getDatabase, ref, get, set, update } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-database.js";
+    import { getStorage, ref as sRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-storage.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCBN5AMN7j_qnlnwulFHvIeR1NmLyQ0OZo",
+      authDomain: "techverse-ca88a.firebaseapp.com",
+      databaseURL: "https://techverse-ca88a-default-rtdb.firebaseio.com",
+      projectId: "techverse-ca88a",
+      storageBucket: "techverse-ca88a.appspot.com",
+      messagingSenderId: "288969741715",
+      appId: "1:288969741715:web:03ddb8b82da9224e234466",
+      measurementId: "G-33XTL4HJR9"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getDatabase(app);
+    const storage = getStorage(app);
+
+    const $ = id => document.getElementById(id);
+    const toastEl = $('toast');
+    const currency = n => '₹' + (Number(n)||0).toFixed(2);
+    const genId = (p='id') => p + '_' + Date.now() + '_' + Math.floor(Math.random()*1e6);
+
+    let UID = null;
+    let settings = { name:'Techverse Solution', address:'', contact:'', gst:0, printMode:'normal', logoUrl:'' };
+    let products = [];
+    let customers = [];
+    let transactions = [];
+    let cart = [];
+    let editingProductId = null;
+    let editingCustomerId = null;
+
+    function showToast(msg, type='success'){
+      toastEl.textContent = msg;
+      toastEl.className = 'toast ' + type;
+      toastEl.style.display = 'block';
+      setTimeout(()=> toastEl.style.display='none', 2200);
+    }
+
+    function switchTab(e, id){
+      document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
+      document.querySelectorAll('.nav-tab').forEach(b=>b.classList.remove('active'));
+      $(id).classList.add('active');
+      if(e && e.target) e.target.classList.add('active');
+      if (id==='dashboard') loadDashboard();
+      if (id==='products') renderProducts();
+      if (id==='customers') renderCustomers();
+      if (id==='pos') rebuildPOSSelectors();
+      if (id==='reports') loadReports();
+    }
+
+    function applyPrintModeClass(){
+      document.body.classList.remove('print-thermal','print-normal');
+      document.body.classList.add(settings.printMode==='thermal'?'print-thermal':'print-normal');
+    }
+    function applyPrintModeSelect(){
+      settings.printMode = $('printModeSelect').value || 'normal';
+      saveSettingsToDB();
+      applyPrintModeClass();
+    }
+
+    // ---------- AUTH GUARD ----------
+    onAuthStateChanged(auth, async (user)=>{
+      if(!user){ location.replace("signin.html"); return; }
+      UID = user.uid;
+      $('userInfo').textContent = user.email || 'Logged in';
+      await loadAllFromDB();
+      $('taxPercent').value = settings.gst || 0;
+      applyPrintModeClass();
+      loadDashboard();
+      renderProducts();
+      renderCustomers();
+      rebuildPOSSelectors();
+      loadReports();
+    });
+
+    $('logoutBtn').addEventListener('click', async ()=>{
+      await signOut(auth);
+      location.href = "signin.html";
+    });
+
+    // ---------- DB HELPERS ----------
+    const path = (k) => `users/${UID}/${k}`;
+
+    async function loadAllFromDB(){
+      // settings
+      let snap = await get(ref(db, path('settings')));
+      if(snap.exists()) settings = snap.val();
+      // products
+      snap = await get(ref(db, path('products')));
+      products = snap.exists() ? Object.values(snap.val()) : [];
+      // customers
+      snap = await get(ref(db, path('customers')));
+      customers = snap.exists() ? Object.values(snap.val()) : [];
+      // transactions
+      snap = await get(ref(db, path('transactions')));
+      transactions = snap.exists() ? Object.values(snap.val()) : [];
+    }
+
+    async function saveSettingsToDB(){
+      await set(ref(db, path('settings')), settings);
+      showToast('Settings saved');
+    }
+    async function saveProductsToDB(){ 
+      const obj = {}; for(const p of products){ obj[p.id]=p; }
+      await set(ref(db, path('products')), obj);
+    }
+    async function saveCustomersToDB(){ 
+      const obj = {}; for(const c of customers){ obj[c.id]=c; }
+      await set(ref(db, path('customers')), obj);
+    }
+    async function saveTransactionsToDB(){ 
+      const obj = {}; for(const t of transactions){ obj[t.id]=t; }
+      await set(ref(db, path('transactions')), obj);
+    }
+
+    // ---------- SETTINGS ----------
+    function openSettings(){
+      $('setName').value = settings.name || 'Techverse Solution';
+      $('setAddress').value = settings.address || '';
+      $('setContact').value = settings.contact || '';
+      $('setGST').value = settings.gst ?? 0;
+      $('setPrintMode').value = settings.printMode || 'normal';
+      $('setLogoUrl').value = settings.logoUrl || '';
+      $('settingsModal').classList.add('active');
+    }
+    function closeSettings(){ $('settingsModal').classList.remove('active'); }
+
+    async function saveSettings(){
+      try{
+        const name = $('setName').value.trim() || 'Techverse Solution';
+        const address = $('setAddress').value.trim();
+        const contact = $('setContact').value.trim();
+        const gst = Number($('setGST').value || 0);
+        const printMode = $('setPrintMode').value || 'normal';
+        let logoUrl = $('setLogoUrl').value.trim() || settings.logoUrl || '';
+
+        const file = $('logoFile').files[0];
+        if(file){
+          const filePath = `logos/${UID}/${Date.now()}_${file.name}`;
+          const storageRef = sRef(storage, filePath);
+          await uploadBytes(storageRef, file);
+          logoUrl = await getDownloadURL(storageRef);
+          $('setLogoUrl').value = logoUrl;
+        }
+
+        settings = { ...settings, name, address, contact, gst, printMode, logoUrl };
+        await saveSettingsToDB();
+        $('printModeSelect').value = settings.printMode;
+        applyPrintModeClass();
+        closeSettings();
+      }catch(e){ showToast('Error saving settings: '+(e.message||e),'error'); }
+    }
+
+    // ---------- PRODUCTS ----------
+    function showAddProductModal(){
+      editingProductId = null;
+      $('productModalTitle').textContent = 'Add Product';
+      $('productName').value = '';
+      $('productCategory').value = '';
+      $('productQuantity').value = 0;
+      $('productCost').value = 0;
+      $('productSelling').value = 0;
+      $('productSupplier').value = '';
+      $('productSKU').value = '';
+      $('productModal').classList.add('active');
+    }
+    function closeProductModal(){ $('productModal').classList.remove('active'); }
+
+    async function saveProduct(){
+      const name = $('productName').value.trim();
+      const category = $('productCategory').value.trim();
+      const quantity = Number($('productQuantity').value || 0);
+      const cost = Number($('productCost').value || 0);
+      const selling = Number($('productSelling').value || 0);
+      const supplier = $('productSupplier').value.trim();
+      const sku = $('productSKU').value.trim();
+
+      if(!name || !category || quantity<0 || cost<0 || selling<0){
+        showToast('Please fill all required fields correctly!','error'); return;
+      }
+
+      if(editingProductId){
+        const idx = products.findIndex(p=>p.id===editingProductId);
+        if(idx>-1){
+          products[idx] = { ...products[idx], name,category,quantity,cost,selling,supplier,sku };
+        }
+        showToast('Product updated!');
+      }else{
+        products.push({
+          id: genId('prod'),
+          name,category,quantity,cost,selling,supplier,sku,
+          createdAt: Date.now(),
+          soldQuantity: 0
+        });
+        showToast('Product added!');
+      }
+      await saveProductsToDB();
+      renderProducts();
+      rebuildPOSSelectors();
+      closeProductModal();
+    }
+
+    async function editProduct(id){
+      const p = products.find(x=>x.id===id); if(!p) return;
+      editingProductId = id;
+      $('productModalTitle').textContent = 'Edit Product';
+      $('productName').value = p.name||'';
+      $('productCategory').value = p.category||'';
+      $('productQuantity').value = p.quantity??0;
+      $('productCost').value = p.cost??0;
+      $('productSelling').value = p.selling??0;
+      $('productSupplier').value = p.supplier||'';
+      $('productSKU').value = p.sku||'';
+      $('productModal').classList.add('active');
+    }
+
+    async function deleteProduct(id){
+      if(!confirm('Delete this product?')) return;
+      products = products.filter(p=>p.id!==id);
+      await saveProductsToDB();
+      renderProducts();
+      rebuildPOSSelectors();
+      showToast('Product deleted');
+    }
+
+    function renderProducts(){
+      $('totalProducts').textContent = products.length;
+      const lowStock = products.filter(p=> (p.quantity??0) < 10);
+      $('lowStockCount').textContent = lowStock.length;
+
+      const rows = products.map(p=>`
+        <tr>
+          <td>${p.name}</td>
+          <td>${p.category}</td>
+          <td>${(p.quantity??0) < 10 ? '<span class="low-stock">'+(p.quantity??0)+'</span>' : (p.quantity??0)}</td>
+          <td>₹${Number(p.cost||0).toFixed(2)}</td>
+          <td>₹${Number(p.selling||0).toFixed(2)}</td>
+          <td>${p.supplier||'-'}</td>
+          <td>${p.sku||'-'}</td>
+          <td class="actions">
+            <button class="btn btn-sm btn-primary" onclick="editProduct('${p.id}')">Edit</button>
+            <button class="btn btn-sm btn-danger" onclick="deleteProduct('${p.id}')">Delete</button>
+          </td>
+        </tr>`).join('');
+      $('productsTable').innerHTML = rows || '<tr><td colspan="8" style="text-align:center;">No products found</td></tr>';
+
+      $('lowStockTable').innerHTML = lowStock.map(p=>`
+        <tr><td>${p.name}</td><td>${p.category}</td><td><span class="low-stock">${p.quantity??0}</span></td><td>${p.sku||'-'}</td></tr>
+      `).join('') || '<tr><td colspan="4" style="text-align:center;">All products well stocked</td></tr>';
+    }
+
+    function searchProducts(){
+      const q = $('productSearch').value.toLowerCase();
+      const filtered = products.filter(p =>
+        (p.name||'').toLowerCase().includes(q) ||
+        (p.category||'').toLowerCase().includes(q) ||
+        (p.sku||'').toLowerCase().includes(q)
+      );
+      $('productsTable').innerHTML = filtered.map(p=>`
+        <tr>
+          <td>${p.name}</td><td>${p.category}</td>
+          <td>${(p.quantity??0) < 10 ? '<span class="low-stock">'+(p.quantity??0)+'</span>' : (p.quantity??0)}</td>
+          <td>₹${Number(p.cost||0).toFixed(2)}</td><td>₹${Number(p.selling||0).toFixed(2)}</td>
+          <td>${p.supplier||'-'}</td><td>${p.sku||'-'}</td>
+          <td class="actions">
+            <button class="btn btn-sm btn-primary" onclick="editProduct('${p.id}')">Edit</button>
+            <button class="btn btn-sm btn-danger" onclick="deleteProduct('${p.id}')">Delete</button>
+          </td>
+        </tr>
+      `).join('') || '<tr><td colspan="8" style="text-align:center;">No products</td></tr>';
+    }
+
+    // ---------- CUSTOMERS ----------
+    function showAddCustomerModal(){
+      editingCustomerId = null;
+      $('customerModalTitle').textContent = 'Add Customer';
+      $('customerName').value = '';
+      $('customerContact').value = '';
+      $('customerAddress').value = '';
+      $('customerModal').classList.add('active');
+    }
+    function closeCustomerModal(){ $('customerModal').classList.remove('active'); }
+
+    async function saveCustomer(){
+      const name = $('customerName').value.trim();
+      const contact = $('customerContact').value.trim();
+      const address = $('customerAddress').value.trim();
+      if(!name || !contact){ showToast('Please fill required fields','error'); return; }
+
+      if(editingCustomerId){
+        const i = customers.findIndex(c=>c.id===editingCustomerId);
+        if(i>-1){ customers[i] = { ...customers[i], name,contact,address }; }
+        showToast('Customer updated');
+      }else{
+        customers.push({ id: genId('cust'), name, contact, address, totalPurchases: 0, createdAt: Date.now() });
+        showToast('Customer added');
+      }
+      await saveCustomersToDB();
+      renderCustomers();
+      closeCustomerModal();
+    }
+
+    async function editCustomer(id){
+      const c = customers.find(x=>x.id===id); if(!c) return;
+      editingCustomerId = id;
+      $('customerModalTitle').textContent = 'Edit Customer';
+      $('customerName').value = c.name||'';
+      $('customerContact').value = c.contact||'';
+      $('customerAddress').value = c.address||'';
+      $('customerModal').classList.add('active');
+    }
+
+    async function deleteCustomer(id){
+      if(!confirm('Delete this customer?')) return;
+      customers = customers.filter(c=>c.id!==id);
+      await saveCustomersToDB();
+      renderCustomers();
+      showToast('Customer deleted');
+    }
+
+    function renderCustomers(){
+      $('totalCustomers').textContent = customers.length;
+      $('customersTable').innerHTML = customers.map(c=>`
+        <tr>
+          <td>${c.name}</td><td>${c.contact}</td><td>${c.address||'-'}</td>
+          <td>₹${Number(c.totalPurchases||0).toFixed(2)}</td>
+          <td class="actions">
+            <button class="btn btn-sm btn-primary" onclick="editCustomer('${c.id}')">Edit</button>
+            <button class="btn btn-sm btn-danger" onclick="deleteCustomer('${c.id}')">Delete</button>
+          </td>
+        </tr>
+      `).join('') || '<tr><td colspan="5" style="text-align:center;">No customers</td></tr>';
+    }
+
+    function searchCustomers(){
+      const q = $('customerSearch').value.toLowerCase();
+      const filtered = customers.filter(c => (c.name||'').toLowerCase().includes(q) || (c.contact||'').toLowerCase().includes(q));
+      $('customersTable').innerHTML = filtered.map(c=>`
+        <tr>
+          <td>${c.name}</td><td>${c.contact}</td><td>${c.address||'-'}</td>
+          <td>₹${Number(c.totalPurchases||0).toFixed(2)}</td>
+          <td class="actions">
+            <button class="btn btn-sm btn-primary" onclick="editCustomer('${c.id}')">Edit</button>
+            <button class="btn btn-sm btn-danger" onclick="deleteCustomer('${c.id}')">Delete</button>
+          </td>
+        </tr>
+      `).join('') || '<tr><td colspan="5" style="text-align:center;">No customers</td></tr>';
+    }
+
+    // ---------- POS ----------
+    function rebuildPOSSelectors(){
+      const opts = ['<option value="">-- Select Product --</option>']
+        .concat(products.filter(p=> (p.quantity??0) > 0)
+          .map(p=>`<option value="${p.id}">${p.name} - ₹${Number(p.selling||0).toFixed(2)} (Stock: ${p.quantity??0})</option>`));
+      $('posProductSelect').innerHTML = opts.join('');
+    }
+    function addToCart(){
+      const id = $('posProductSelect').value; if(!id) return;
+      const p = products.find(x=>x.id===id); if(!p) return;
+      const ex = cart.find(i=>i.id===id);
+      if(ex){
+        if(ex.quantity < (p.quantity??0)) ex.quantity++;
+        else return showToast('Not enough stock','error');
+      }else{
+        cart.push({id:p.id,name:p.name,price:Number(p.selling||0),quantity:1,maxQuantity:(p.quantity??0)});
+      }
+      $('posProductSelect').value = '';
+      updateCart();
+    }
+    function removeFromCart(i){ cart.splice(i,1); updateCart(); }
+    function updateCartQuantity(i,delta){
+      const it = cart[i]; if(!it) return;
+      const q = it.quantity + delta;
+      if(q<=0) removeFromCart(i);
+      else if(q<=it.maxQuantity){ it.quantity=q; updateCart(); }
+      else showToast('Not enough stock','error');
+    }
+
+    function updateCart(){
+      $('cartItems').innerHTML = cart.map((it,i)=>`
+        <tr>
+          <td>${it.name}</td>
+          <td>₹${it.price.toFixed(2)}</td>
+          <td><div class="quantity-control">
+            <button onclick="updateCartQuantity(${i},-1)">-</button>
+            <span>${it.quantity}</span>
+            <button onclick="updateCartQuantity(${i},1)">+</button>
+          </div></td>
+          <td>₹${(it.price*it.quantity).toFixed(2)}</td>
+          <td><button class="btn btn-sm btn-danger" onclick="removeFromCart(${i})">Remove</button></td>
+        </tr>
+      `).join('') || '<tr><td colspan="5" style="text-align:center;">Cart is empty</td></tr>';
+
+      const subtotal = cart.reduce((s,x)=>s + x.price*x.quantity, 0);
+      const taxPercent = Number($('taxPercent').value||0);
+      const taxAmount = subtotal * taxPercent / 100;
+      const discount = Number($('discountAmount').value||0);
+      const grand = subtotal + taxAmount - discount;
+
+      $('subtotal').textContent = currency(subtotal);
+      $('taxAmount').textContent = currency(taxAmount);
+      $('discount').textContent = currency(discount);
+      $('grandTotal').textContent = currency(grand);
+    }
+
+    function clearCart(){
+      cart = [];
+      $('taxPercent').value = settings.gst || 0;
+      $('discountAmount').value = 0;
+      $('billCustomerName').value = '';
+      $('billCustomerPhone').value = '';
+      updateCart();
+    }
+
+    async function completeSale(){
+      if(cart.length===0) return showToast('Cart is empty','error');
+
+      const customerName = $('billCustomerName').value.trim() || 'Walk-in';
+      const customerPhone = $('billCustomerPhone').value.trim();
+      const gstDefault = settings.gst || 0;
+      const taxPercent = Number($('taxPercent').value || gstDefault || 0);
+      const discount = Number($('discountAmount').value || 0);
+      const paymentMode = $('paymentMode').value;
+
+      const subtotal = cart.reduce((s,x)=>s + x.price*x.quantity, 0);
+      const taxAmount = subtotal * taxPercent / 100;
+      const total = subtotal + taxAmount - discount;
+
+      // Save / upsert customer by phone
+      let customerId = null;
+      if(customerPhone){
+        const exists = customers.find(c=> (c.contact||'')===customerPhone);
+        if(exists){ customerId = exists.id; }
+        else{
+          const newC = { id: genId('cust'), name: customerName, contact: customerPhone, address:'', totalPurchases:0, createdAt: Date.now() };
+          customers.push(newC);
+          customerId = newC.id;
+        }
+        const idx = customers.findIndex(c=>c.id===customerId);
+        if(idx>-1){ customers[idx].totalPurchases = Number(customers[idx].totalPurchases||0) + total; }
+        await saveCustomersToDB();
+      }
+
+      // Create transaction
+      const items = cart.map(x=>({productId:x.id,name:x.name,price:x.price,quantity:x.quantity}));
+      const tx = {
+        id: genId('tx'),
+        invoiceNumber: 'INV-' + Date.now(),
+        date: new Date().toISOString(),
+        customerId: customerId || null,
+        customerName, customerPhone,
+        items, subtotal, taxPercent, taxAmount, discount, total, paymentMode,
+        createdAt: Date.now()
+      };
+      transactions.unshift(tx);
+      await saveTransactionsToDB();
+
+      // Reduce stock & soldQuantity
+      for(const it of cart){
+        const pi = products.findIndex(p=>p.id===it.id);
+        if(pi>-1){
+          const q = Number(products[pi].quantity||0) - it.quantity;
+          const sq = Number(products[pi].soldQuantity||0) + it.quantity;
+          products[pi].quantity = q<0?0:q;
+          products[pi].soldQuantity = sq;
+        }
+      }
+      await saveProductsToDB();
+
+      viewInvoice(tx.invoiceNumber, true);
+      clearCart();
+      renderProducts();
+      rebuildPOSSelectors();
+      loadDashboard();
+      loadReports();
+      showToast('Sale completed');
+    }
+
+    // ---------- DASHBOARD / REPORTS ----------
+    function loadDashboard(){
+      const totalSales = transactions.reduce((s,t)=> s + (t.total||0), 0);
+      $('totalSales').textContent = totalSales.toFixed(2);
+
+      const recents = [...transactions].slice(0,5);
+      $('recentTransactions').innerHTML = recents.map(t=>`
+        <tr>
+          <td>${t.invoiceNumber || t.id}</td>
+          <td>${ t.createdAt ? new Date(t.createdAt).toLocaleDateString()
+                : (t.date ? new Date(t.date).toLocaleDateString() : '-') }</td>
+          <td>${t.customerName || 'Walk-in'}</td>
+          <td>₹${Number(t.total || 0).toFixed(2)}</td>
+          <td><button class="btn btn-sm btn-primary" onclick="viewInvoice('${t.invoiceNumber || t.id}')">View</button></td>
+        </tr>
+      `).join('') || '<tr><td colspan="5" style="text-align:center;">No transactions</td></tr>';
+    }
+
+    function loadReports(){
+      const now = new Date(); const currentMonth = now.getMonth(); const currentYear = now.getFullYear();
+      const monthTx = transactions.filter(t=>{const d=new Date(t.date); return d.getMonth()===currentMonth && d.getFullYear()===currentYear;});
+      const monthRevenue = monthTx.reduce((s,t)=>s+(t.total||0),0);
+      $('monthRevenue').textContent = monthRevenue.toFixed(2);
+      $('monthTransactions').textContent = monthTx.length;
+      $('avgSale').textContent = monthTx.length>0 ? (monthRevenue/monthTx.length).toFixed(2) : '0';
+
+      const best = [...products]
+        .filter(p=> (p.soldQuantity||0)>0)
+        .sort((a,b)=> (b.soldQuantity||0)-(a.soldQuantity||0))
+        .slice(0,10);
+      $('bestSellersTable').innerHTML = best.map(p=>`
+        <tr><td>${p.name}</td><td>${p.category||'-'}</td><td>${p.soldQuantity||0}</td><td>₹${Number((p.soldQuantity||0)* (p.selling||0)).toFixed(2)}</td></tr>
+      `).join('') || '<tr><td colspan="4" style="text-align:center;">No sales data</td></tr>';
+    }
+
+    // ---------- INVOICE ----------
+    function viewInvoice(invoiceNumber, openImmediately=false){
+      const t = transactions.find(x=>x.invoiceNumber===invoiceNumber);
+      if(!t){ return showToast('Invoice not found','error'); }
+
+      const s = settings;
+      const itemsHtml = (t.items||[]).map(it=>`
+        <tr>
+          <td>${it.name}</td>
+          <td>${it.quantity}</td>
+          <td>₹${Number(it.price||0).toFixed(2)}</td>
+          <td>₹${Number(it.price*it.quantity).toFixed(2)}</td>
+        </tr>
+      `).join('');
+
+      const headerLogo = s.logoUrl ? `<img src="${s.logoUrl}" alt="logo" style="max-height:60px;display:block;margin:0 auto 8px;"/>` : '';
+      const gstLine = Number(s.gst||0) > 0 ? `<div><strong>GST (${s.gst}%):</strong> ₹${Number(t.taxAmount||0).toFixed(2)}</div>` : '';
+
+      const html = `
+        <div class="invoice">
+          <div class="invoice-header">
+            ${headerLogo}
+            <h1>${s.name || 'Techverse Solution'}</h1>
+            ${s.address ? `<div style="color:#555">${s.address}</div>`:''}
+            ${s.contact ? `<div style="color:#555">${s.contact}</div>`:''}
+          </div>
+          <div class="invoice-details">
+            <div>
+              <strong>Invoice #:</strong> ${t.invoiceNumber}<br>
+              <strong>Date:</strong> ${new Date(t.date).toLocaleString()}<br>
+              <strong>Payment:</strong> ${t.paymentMode || '-'}
+            </div>
+            <div style="text-align:right;">
+              <strong>Customer:</strong> ${t.customerName || 'Walk-in'}<br>
+              ${t.customerPhone ? `<strong>Phone:</strong> ${t.customerPhone}<br>`:''}
+              <strong>Total Amount</strong><br>
+              <span style="font-size:22px;color:#2563eb;">₹${Number(t.total||0).toFixed(2)}</span>
+            </div>
+          </div>
+          <table style="width:100%;border-collapse:collapse;">
+            <thead><tr><th style="text-align:left;padding:8px;background:#f3f4f6;">Product</th><th style="text-align:left;padding:8px;background:#f3f4f6;">Qty</th><th style="text-align:left;padding:8px;background:#f3f4f6;">Price (₹)</th><th style="text-align:left;padding:8px;background:#f3f4f6;">Subtotal (₹)</th></tr></thead>
+            <tbody>${itemsHtml}</tbody>
+          </table>
+          <div style="margin-top:14px;text-align:right;">
+            <div style="margin-bottom:6px;"><strong>Subtotal:</strong> ₹${Number(t.subtotal||0).toFixed(2)}</div>
+            ${gstLine}
+            <div style="margin-bottom:6px;"><strong>Discount:</strong> ₹${Number(t.discount||0).toFixed(2)}</div>
+            <div style="font-size:18px;color:#2563eb;"><strong>Grand Total:</strong> ₹${Number(t.total||0).toFixed(2)}</div>
+          </div>
+          <div style="margin-top:18px;text-align:center;color:#666;font-size:12px;">Thank you for your business!</div>
+        </div>
+      `;
+      $('invoiceContent').innerHTML = html;
+      $('invoiceModal').classList.add('active');
+      applyPrintModeClass();
+    }
+    function closeInvoiceModal(){ $('invoiceModal').classList.remove('active'); }
+    function printInvoice(){ window.print(); }
+
+    // ---------- EXPORT / IMPORT ----------
+    function downloadJson(obj, filename){
+      const blob = new Blob([JSON.stringify(obj,null,2)],{type:'application/json'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a'); a.href=url; a.download=filename; document.body.appendChild(a); a.click();
+      a.remove(); URL.revokeObjectURL(url);
+    }
+
+    function exportData(type){
+      try{
+        let data = [];
+        if(type==='products') data = products;
+        if(type==='customers') data = customers;
+        if(type==='transactions') data = transactions;
+        downloadJson(data, `techverse_${type}.json`);
+        showToast('Data exported');
+      }catch(e){ showToast('Export error: '+(e.message||e),'error'); }
+    }
+    function exportAll(){
+      try{
+        const data = { settings, products, customers, transactions };
+        downloadJson(data,'techverse_all_data.json');
+        showToast('All data exported');
+      }catch(e){ showToast('Export error: '+(e.message||e),'error'); }
+    }
+
+    async function importData(){
+      const type = $('importType').value;
+      const file = $('importFile').files[0];
+      if(!file) return showToast('Choose a JSON file','error');
+      try{
+        const text = await file.text();
+        const json = JSON.parse(text);
+
+        if(type==='all'){
+          if(json.settings){ settings = { ...settings, ...json.settings }; await saveSettingsToDB(); }
+          if(Array.isArray(json.products)){ products = json.products; await saveProductsToDB(); }
+          if(Array.isArray(json.customers)){ customers = json.customers; await saveCustomersToDB(); }
+          if(Array.isArray(json.transactions)){ transactions = json.transactions; await saveTransactionsToDB(); }
+        }else{
+          if(!Array.isArray(json)) return showToast('Invalid JSON format for this import type','error');
+          if(type==='products'){ products = json; await saveProductsToDB(); }
+          if(type==='customers'){ customers = json; await saveCustomersToDB(); }
+          if(type==='transactions'){ transactions = json; await saveTransactionsToDB(); }
+        }
+
+        renderProducts();
+        renderCustomers();
+        rebuildPOSSelectors();
+        loadDashboard();
+        loadReports();
+        showToast('Import complete');
+        $('importFile').value = '';
+      }catch(e){ showToast('Import error: '+(e.message||e),'error'); }
+    }
+
+    // ---------- INIT ----------
+    function applyPrintModeSelectOnInit(){
+      $('printModeSelect').value = settings.printMode || 'normal';
+    }
+    document.addEventListener('DOMContentLoaded', ()=>{
+      // Everything else happens after auth state is known
+      applyPrintModeSelectOnInit();
+    });
+  </script>
+</body>
+</html>
