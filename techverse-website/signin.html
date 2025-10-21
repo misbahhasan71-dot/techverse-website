@@ -4,115 +4,269 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>TechVerse Login</title>
-  <style> 
-    body{margin:0;padding:0;font-family:Poppins,system-ui,-apple-system,Segoe UI,Roboto;background:linear-gradient(135deg,#0f2027,#203a43,#2c5364);display:flex;align-items:center;justify-content:center;height:100vh}
-    .container{display:flex;background:#fff;border-radius:20px;box-shadow:0 0 40px rgba(0,0,0,.2);overflow:hidden;width:900px;max-width:90%;height:550px}
-    .left{flex:1;background:linear-gradient(135deg,#ff9a9e,#fad0c4);position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden}
-    .character{width:200px;height:200px;background:#fff;border-radius:50%;position:relative;box-shadow:0 10px 25px rgba(0,0,0,.2);transition:transform .4s ease}
-    .eyes{position:absolute;top:60px;left:50%;transform:translateX(-50%);display:flex;gap:40px}
-    .eye{width:40px;height:40px;background:#fff;border-radius:50%;position:relative;overflow:hidden;border:3px solid #000}
-    .pupil{width:20px;height:20px;background:#000;border-radius:50%;position:absolute;top:10px;left:10px;transition:.2s}
-    .mouth{width:80px;height:40px;border-bottom:6px solid #000;border-radius:0 0 40px 40px;position:absolute;bottom:40px;left:50%;transform:translateX(-50%);transition:.3s ease}
-    .right{flex:1;padding:60px;display:flex;flex-direction:column;justify-content:center;background:#fff}
-    h2{text-align:center;color:#333;margin-bottom:30px}
-    input{width:100%;padding:12px;margin:10px 0;border-radius:10px;border:1px solid #ccc;font-size:16px;outline:none}
-    button{width:100%;padding:12px;border:none;background:#203a43;color:#fff;font-size:18px;border-radius:10px;margin-top:15px;cursor:pointer;transition:background .3s}
-    button:hover{background:#2c5364}
-    .google-btn{background:#db4437;margin-top:10px}
-    .error{color:red;text-align:center;margin-top:10px}
-    .success{color:green;text-align:center;margin-top:10px}
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .login-container {
+      background: #ffffff10;
+      padding: 40px;
+      border-radius: 20px;
+      backdrop-filter: blur(15px);
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+      text-align: center;
+      color: #fff;
+      width: 320px;
+    }
+
+    input {
+      width: 100%;
+      padding: 12px;
+      margin: 10px 0;
+      border: none;
+      border-radius: 8px;
+      outline: none;
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      background: #00c6ff;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    button:hover {
+      background: #0072ff;
+    }
+
+    .password-group {
+      position: relative;
+    }
+
+    .toggle-password {
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      cursor: pointer;
+    }
+
+    #message {
+      margin-top: 15px;
+      font-weight: bold;
+    }
   </style>
 </head>
 <body>
-  <div class="container">
-    <div class="left">
-      <div class="character" id="character">
-        <div class="eyes">
-          <div class="eye"><div class="pupil"></div></div>
-          <div class="eye"><div class="pupil"></div></div>
-        </div>
-        <div class="mouth" id="mouth"></div>
-      </div>
+  <div class="login-container">
+    <h1>TechVerse Login</h1>
+    <div class="form-group">
+      <input type="email" id="email" placeholder="Enter Email" required>
     </div>
-    <div class="right">
-      <h2>Welcome Back 👋</h2>
-      <input type="email" id="email" placeholder="Email" value="care@techverse.in"/>
-      <input type="password" id="password" placeholder="Password" value="Techverse#123"/>
-      <button id="loginBtn">Log In</button>
-      <button class="google-btn" id="googleLogin">Login with Google</button>
-      <div class="error" id="error"></div>
-      <div class="success" id="success"></div>
+    <div class="form-group password-group">
+      <input type="password" id="password" placeholder="Enter Password" required>
+      <span class="toggle-password" id="togglePassword">👁️</span>
     </div>
+    <button id="loginBtn">Login</button>
+    <p id="message"></p>
   </div>
 
   <script type="module">
-    // Firebase v12 (modular) SDKs
+    // Import Firebase SDK
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
-    import { getAuth, signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js";
-    import { getDatabase } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-database.js";
+    import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js";
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-analytics.js";
 
+    // Firebase configuration
     const firebaseConfig = {
       apiKey: "AIzaSyCBN5AMN7j_qnlnwulFHvIeR1NmLyQ0OZo",
       authDomain: "techverse-ca88a.firebaseapp.com",
       databaseURL: "https://techverse-ca88a-default-rtdb.firebaseio.com",
       projectId: "techverse-ca88a",
-      storageBucket: "techverse-ca88a.appspot.com",
+      storageBucket: "techverse-ca88a.firebasestorage.app",
       messagingSenderId: "288969741715",
       appId: "1:288969741715:web:03ddb8b82da9224e234466",
       measurementId: "G-33XTL4HJR9"
     };
 
+    // Initialize Firebase
     const app = initializeApp(firebaseConfig);
+    const analytics = getAnalytics(app);
     const auth = getAuth(app);
-    getDatabase(app); // touch db so rules initialize fine
 
     const loginBtn = document.getElementById("loginBtn");
-    const googleLogin = document.getElementById("googleLogin");
-    const emailInput = document.getElementById("email");
-    const passwordInput = document.getElementById("password");
-    const errorBox = document.getElementById("error");
-    const successBox = document.getElementById("success");
-    const mouth = document.getElementById("mouth");
-    const pupils = document.querySelectorAll(".pupil");
+    const message = document.getElementById("message");
 
-    document.addEventListener("mousemove", (e) => {
-      pupils.forEach(pupil => {
-        const r = pupil.getBoundingClientRect();
-        const x = e.clientX - r.left - r.width/2;
-        const y = e.clientY - r.top - r.height/2;
-        pupil.style.transform = `translate(${x/25}px, ${y/25}px)`;
-      });
+    loginBtn.addEventListener("click", () => {
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+
+      signInWithEmailAndPassword(auth, email, password)
+        .then((userCredential) => {
+          message.style.color = "lightgreen";
+          message.textContent = "✅ Login successful!";
+        })
+        .catch((error) => {
+          message.style.color = "red";
+          message.textContent = "❌ " + error.message;
+        });
     });
 
-    function setMouth(happy){
-      if(happy){ mouth.style.borderBottom="6px solid #000"; mouth.style.borderTop="none"; mouth.style.borderRadius="0 0 40px 40px"; }
-      else { mouth.style.borderBottom="none"; mouth.style.borderTop="6px solid #000"; mouth.style.borderRadius="40px 40px 0 0"; }
+    // Show/hide password toggle
+    document.getElementById("togglePassword").addEventListener("click", () => {
+      const passwordField = document.getElementById("password");
+      const type = passwordField.getAttribute("type") === "password" ? "text" : "password";
+      passwordField.setAttribute("type", type);
+    });
+  </script>
+</body>
+</html><!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TechVerse Login</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
     }
 
-    loginBtn.addEventListener("click", async () => {
-      errorBox.textContent=""; successBox.textContent="";
-      try{
-        await signInWithEmailAndPassword(auth, emailInput.value, passwordInput.value);
-        setMouth(true);
-        successBox.textContent = "Login successful 🎉 Redirecting...";
-        // no need to manually store UID, dashboard uses onAuthStateChanged
-        setTimeout(()=> location.href = "dashboard.html", 800);
-      }catch(err){
-        console.error(err);
-        setMouth(false);
-        errorBox.textContent = "Invalid email or password 😢";
-      }
+    .login-container {
+      background: #ffffff10;
+      padding: 40px;
+      border-radius: 20px;
+      backdrop-filter: blur(15px);
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+      text-align: center;
+      color: #fff;
+      width: 320px;
+    }
+
+    input {
+      width: 100%;
+      padding: 12px;
+      margin: 10px 0;
+      border: none;
+      border-radius: 8px;
+      outline: none;
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      background: #00c6ff;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    button:hover {
+      background: #0072ff;
+    }
+
+    .password-group {
+      position: relative;
+    }
+
+    .toggle-password {
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      cursor: pointer;
+    }
+
+    #message {
+      margin-top: 15px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <div class="login-container">
+    <h1>TechVerse Login</h1>
+    <div class="form-group">
+      <input type="email" id="email" placeholder="Enter Email" required>
+    </div>
+    <div class="form-group password-group">
+      <input type="password" id="password" placeholder="Enter Password" required>
+      <span class="toggle-password" id="togglePassword">👁️</span>
+    </div>
+    <button id="loginBtn">Login</button>
+    <p id="message"></p>
+  </div>
+
+  <script type="module">
+    // Import Firebase SDK
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js";
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-analytics.js";
+
+    // Firebase configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyCBN5AMN7j_qnlnwulFHvIeR1NmLyQ0OZo",
+      authDomain: "techverse-ca88a.firebaseapp.com",
+      databaseURL: "https://techverse-ca88a-default-rtdb.firebaseio.com",
+      projectId: "techverse-ca88a",
+      storageBucket: "techverse-ca88a.firebasestorage.app",
+      messagingSenderId: "288969741715",
+      appId: "1:288969741715:web:03ddb8b82da9224e234466",
+      measurementId: "G-33XTL4HJR9"
+    };
+
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const analytics = getAnalytics(app);
+    const auth = getAuth(app);
+
+    const loginBtn = document.getElementById("loginBtn");
+    const message = document.getElementById("message");
+
+    loginBtn.addEventListener("click", () => {
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+
+      signInWithEmailAndPassword(auth, email, password)
+        .then((userCredential) => {
+          message.style.color = "lightgreen";
+          message.textContent = "✅ Login successful!";
+        })
+        .catch((error) => {
+          message.style.color = "red";
+          message.textContent = "❌ " + error.message;
+        });
     });
 
-    googleLogin.addEventListener("click", async () => {
-      const provider = new GoogleAuthProvider();
-      errorBox.textContent=""; successBox.textContent="";
-      try{
-        await signInWithPopup(auth, provider);
-        setMouth(true);
-        successBox.textContent = "Google login successful 🎉 Redirecting...";
-        setTimeout(()=> location.href = "dashboard.html", 800);
-      }catch(err){
+    // Show/hide password toggle
+    document.getElementById("togglePassword").addEventListener("click", () => {
+      const passwordField = document.getElementById("password");
+      const type = passwordField.getAttribute("type") === "password" ? "text" : "password";
+      passwordField.setAttribute("type", type);
+    });
+  </script>
+</body>
+</html>      }catch(err){
         console.error(err);
         setMouth(false);
         errorBox.textContent = "Google login failed 😢";
